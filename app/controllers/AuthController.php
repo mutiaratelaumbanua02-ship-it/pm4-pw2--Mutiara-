@@ -34,7 +34,43 @@ class AuthController extends Controller
 
         $this->render('auth/login', ['error' => $error], 'Login - Kelontong Store');
     }
+    public function register()
+    {
+        $error = null;
+        $old = '';
 
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            require_once __DIR__ . '/../models/User.php';
+            require_once __DIR__ . '/../../config/database.php';
+
+            $userModel = new User($pdo);
+
+            $username = trim($_POST['username'] ?? '');
+            $password = $_POST['password'] ?? '';
+            $confirm  = $_POST['confirm'] ?? '';
+            $old = $username;
+
+            if ($username === '' || $password === '') {
+                $error = 'Username dan password wajib diisi.';
+            } elseif (strlen($username) < 3) {
+                $error = 'Username minimal 3 karakter.';
+            } elseif (strlen($password) < 6) {
+                $error = 'Password minimal 6 karakter.';
+            } elseif ($password !== $confirm) {
+                $error = 'Konfirmasi password tidak sama.';
+            } elseif ($userModel->findByUsername($username)) {
+                $error = 'Username sudah dipakai.';
+            } else {
+                $hash = password_hash($password, PASSWORD_BCRYPT);
+                $userModel->create($username, $hash);
+
+                header('Location: login');
+                exit;
+            }
+        }
+
+        $this->render('auth/register', ['error' => $error, 'old' => $old], 'Daftar - Kelontong Store');
+    }
     public function logout()
     {
         session_destroy();

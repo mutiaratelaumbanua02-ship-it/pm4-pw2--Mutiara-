@@ -19,4 +19,13 @@ class User
 
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
+
+    public function create($username, $passwordHash)
+    {
+        $stmt = $this->db->prepare(
+            "INSERT INTO users (username, password) VALUES (?, ?)"
+        );
+
+        return $stmt->execute([$username, $passwordHash]);
+    }
 }
